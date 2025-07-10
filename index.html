@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grafik Registrasi SLA2025</title>
+  <title>Dasbor Registrasi SLA2025</title>
   <style>
     html {
       scroll-behavior: smooth;
@@ -20,41 +20,58 @@
       min-height: 100vh;
     }
 
-    header {
-      background-color: #111;
-      padding: 10px 20px;
+    /* Tab container styling */
+    .tab-container {
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 20px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    /* Tab buttons styling */
+    .tab-buttons {
+      background-color: #111;
+      padding: 0 20px;
+      display: flex;
+      gap: 5px;
       border-bottom: 1px solid #222;
     }
 
-    header a {
-      color: #5df;
-      text-decoration: none;
+    .tab-button {
+      padding: 12px 20px;
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      color: #aaa;
       font-weight: bold;
+      font-size: 16px;
+      border-bottom: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
     }
 
-    header a:hover {
-      text-decoration: underline;
+    .tab-button:hover {
+      color: #fff;
     }
 
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
+    .tab-button.active {
+      color: #5df;
+      border-bottom-color: #5df;
+    }
+
+    /* Tab content styling */
+    .tab-content {
+      display: none; /* Hidden by default */
+      flex-grow: 1;
       padding: 20px;
     }
 
-    iframe {
+    .tab-content.active {
+      display: block; /* Shown when active */
+    }
+
+    .tab-content iframe {
       border: none;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: calc(100vh - 140px); /* Adjust height based on header/footer */
       background-color: #fff;
     }
 
@@ -64,6 +81,7 @@
       text-align: center;
       padding: 15px 10px;
       font-size: 14px;
+      margin-top: auto; /* Pushes footer to the bottom */
     }
 
     footer a {
@@ -78,34 +96,32 @@
 </head>
 <body>
 
-  <!-- Header menu -->
-  <header>
-    <a href="#grafik">Registrasi Grafik</a>
-    <a href="#tabel">Tabel</a>
-  </header>
+  <div class="tab-container">
+    <!-- Tab Buttons -->
+    <div class="tab-buttons">
+      <button class="tab-button active" data-tab="grafik">Registrasi Grafik</button>
+      <button class="tab-button" data-tab="tabel">Tabel</button>
+    </div>
 
-  <!-- Konten Utama -->
-  <main>
-    <section id="grafik">
-      <h2>Grafik Pendaftaran</h2>
+    <!-- Tab Content Panels -->
+    <div id="grafik" class="tab-content active">
       <iframe
         title="Laporan Grafik Registrasi SLA2025"
         src="https://lookerstudio.google.com/embed/reporting/3ff6ef0a-f974-467b-91ca-3b1f00b6727a/page/FAfPF"
         allowfullscreen
         sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
       </iframe>
-    </section>
+    </div>
 
-    <section id="tabel">
-      <h2>Tabel Pendaftaran</h2>
+    <div id="tabel" class="tab-content">
       <iframe
         title="Laporan Tabel Registrasi SLA2025"
         src="https://lookerstudio.google.com/embed/reporting/e878ae1c-1033-4b9c-959d-da3e18e8441d/page/C5FQF"
         allowfullscreen
         sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
       </iframe>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer>
@@ -115,6 +131,33 @@
   <script>
     // Set tahun sekarang secara dinamis
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Deactivate all buttons and content panels
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // Activate the clicked button
+        button.classList.add('active');
+
+        // Activate the corresponding content panel
+        const activeTabContent = document.getElementById(button.dataset.tab);
+        activeTabContent.classList.add('active');
+
+        // Find the iframe within the newly active tab and reload it
+        const iframe = activeTabContent.querySelector('iframe');
+        if (iframe) {
+          // By resetting the src, we force the browser to reload the iframe content.
+          // This is crucial for mobile browsers that might pause inactive iframes.
+          iframe.src = iframe.src;
+        }
+      });
+    });
   </script>
 
 </body>
