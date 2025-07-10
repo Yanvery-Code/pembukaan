@@ -51,31 +51,10 @@
       padding: 20px;
     }
 
-    /* Aturan spesifik untuk iframe grafik */
-    section#grafik iframe {
+    iframe {
       border: none;
-      width: 100%;
-      height: 850px;
-      background-color: #fff;
-    }
-
-    /* Wrapper untuk iframe tabel yang responsif */
-    .responsive-iframe-wrapper {
-      position: relative;
-      overflow: hidden;
-      width: 100%;
-      padding-top: 56.25%; /* 16:9 Aspect Ratio */
-    }
-
-    .responsive-iframe-wrapper iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
+      width: 100vw;
+      height: 100vh;
       background-color: #fff;
     }
 
@@ -119,20 +98,18 @@
 
     <section id="tabel">
       <h2>Tabel Pendaftaran</h2>
-      <div class="responsive-iframe-wrapper">
-        <iframe
-          title="Laporan Tabel Registrasi SLA2025"
-          src="https://lookerstudio.google.com/embed/reporting/e878ae1c-1033-4b9c-959d-da3e18e8441d/page/C5FQF"
-          allowfullscreen
-          sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-        </iframe>
-      </div>
+      <iframe
+        title="Laporan Tabel Registrasi SLA2025"
+        src="https://lookerstudio.google.com/embed/reporting/e878ae1c-1033-4b9c-959d-da3e18e8441d/page/C5FQF"
+        allowfullscreen
+        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+      </iframe>
     </section>
   </main>
 
   <!-- Footer -->
   <footer>
-    &copy; <span id="year"></span> SLA. Dibuat dengan ❤ oleh <a href="https://github.com/Yanvery-Code" target="_blank" rel="noopener noreferrer">Tim Data</a>.
+    &copy; <span id="year"></span> SLA. Dibuat dengan ❤ oleh <a href="https://github.com/Yanvery-Code" target="_blank" rel="noopener noreferrer">Pic IT SLA2025</a>.
   </footer>
 
   <script>
