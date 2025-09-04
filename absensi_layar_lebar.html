@@ -289,6 +289,7 @@
 <audio id="background-music"></audio>
 
 <script>
+  const lookerStudioIframe = '<iframe width="1000" height="750" src="https://lookerstudio.google.com/embed/reporting/fa0561b2-9371-4a0c-bdd1-ebab4135c55b/page/qgR" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>';
   // URL dari Web App yang Anda deploy (diambil dari absensi_pencarian.html)
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKdjiUJBBQo_qY25RQxesk1bL4iSGMs825CrnrI9lOUdfX8WdRnv0yA2ymh4pBiBL1/exec';
 
@@ -423,6 +424,8 @@
         displayItems.push(...generationPages);
       }
 
+      displayItems.push({ type: 'looker_studio' });
+
       currentIndex = 0;
       // Jeda agar Looker Studio sempat tampil, sesuai pengaturan LOOKER_STUDIO_DELAY
       setTimeout(() => {
@@ -506,6 +509,10 @@
             <ul>${kanan.map((n, i) => `<li>${start + i + 11}. ${n}</li>`).join('')}</ul>
           </div>`;
         duration = Math.max(pageList.length * 500, 3000);
+        break;
+      case 'looker_studio':
+        container.innerHTML = lookerStudioIframe;
+        duration = LOOKER_STUDIO_DELAY;
         break;
     }
     scheduleNext(duration);
