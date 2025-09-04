@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dasbor Registrasi SLA2025</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: white;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Tab container styling */
+    .tab-container {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    /* Tab buttons styling */
+    .tab-buttons {
+      background-color: #111;
+      padding: 0 20px;
+      display: flex;
+      gap: 5px;
+      border-bottom: 1px solid #222;
+    }
+
+    .tab-button {
+      padding: 12px 20px;
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      color: #aaa;
+      font-weight: bold;
+      font-size: 16px;
+      border-bottom: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tab-button:hover {
+      color: #fff;
+    }
+
+    .tab-button.active {
+      color: #5df;
+      border-bottom-color: #5df;
+    }
+
+    /* Tab content styling */
+    .tab-content {
+      display: none; /* Hidden by default */
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    .tab-content.active {
+      display: block; /* Shown when active */
+    }
+
+    .tab-content iframe {
+      border: none;
+      width: 100%;
+      height: calc(100vh - 140px); /* Adjust height based on header/footer */
+      background-color: #fff;
+    }
+
+    footer {
+      background-color: #111;
+      color: #aaa;
+      text-align: center;
+      padding: 15px 10px;
+      font-size: 14px;
+      margin-top: auto; /* Pushes footer to the bottom */
+    }
+
+    footer a {
+      color: #5df;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tab-container">
+    <!-- Tab Buttons -->
+    <div class="tab-buttons">
+      <button class="tab-button active" data-tab="grafik">Registrasi Grafik</button>
+      <button class="tab-button" data-tab="tabel">Tabel</button>
+    </div>
+
+    <!-- Tab Content Panels -->
+    <div id="grafik" class="tab-content active">
+      <iframe
+        title="Laporan Grafik Registrasi SLA2025"
+        src="https://lookerstudio.google.com/embed/reporting/3ff6ef0a-f974-467b-91ca-3b1f00b6727a/page/FAfPF"
+        allowfullscreen
+        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+      </iframe>
+    </div>
+
+    <div id="tabel" class="tab-content">
+      <iframe
+        title="Laporan Tabel Registrasi SLA2025"
+        src="https://lookerstudio.google.com/embed/reporting/e878ae1c-1033-4b9c-959d-da3e18e8441d/page/C5FQF"
+        allowfullscreen
+        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    &copy; <span id="year"></span> SLA. Dibuat dengan ❤ oleh <a href="https://github.com/Yanvery-Code" target="_blank" rel="noopener noreferrer">Pic IT SLA2025</a>.
+  </footer>
+
+  <script>
+    // Set tahun sekarang secara dinamis
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Deactivate all buttons and content panels
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // Activate the clicked button
+        button.classList.add('active');
+
+        // Activate the corresponding content panel
+        const activeTabContent = document.getElementById(button.dataset.tab);
+        activeTabContent.classList.add('active');
+
+        // Find the iframe within the newly active tab and reload it
+        const iframe = activeTabContent.querySelector('iframe');
+        if (iframe) {
+          // By resetting the src, we force the browser to reload the iframe content.
+          // This is crucial for mobile browsers that might pause inactive iframes.
+          iframe.src = iframe.src;
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
