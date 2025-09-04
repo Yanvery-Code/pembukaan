@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi V3 (Pencarian)</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; background-color: #f0f2f5; margin: 2rem; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #555; }
+        input[type="text"] { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem; background-color: #007BFF; color: white; border: none; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem; }
+        button:hover:not(:disabled) { background-color: #0056b3; }
+        button:disabled { background-color: #a0cffc; cursor: not-allowed; }
+        #statusMessage { text-align: center; margin-top: 1.5rem; font-weight: bold; min-height: 20px; transition: color 0.3s; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        #nameList { max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 1rem; border-radius: 6px; background-color: #fafafa; }
+        .checkbox-item { display: block; margin-bottom: 0.75rem; }
+        .checkbox-item input { margin-right: 0.5rem; width: auto; }
+        .checkbox-item label { display: inline; font-weight: normal; }
+        .utility-links { text-align: center; margin-top: 1rem; font-size: 0.9rem; }
+        .utility-links a { color: #007BFF; text-decoration: none; }
+        .utility-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Absensi V3 (Pencarian)</h2>
+    
+    <div class="form-group">
+        <label for="searchInput">1. Ketik Nama untuk Mencari:</label>
+        <input type="text" id="searchInput" oninput="filterNames()" placeholder="Ketik min. 2 huruf..." disabled>
+    </div>
+
+    <div class="form-group">
+        <label>2. Centang Nama yang Hadir:</label>
+        <div id="nameList">Memuat data...</div>
+    </div>
+
+    <button id="submitButton" onclick="submitAttendance()" disabled>Submit Kehadiran</button>
+    <p id="statusMessage"></p>
+    <div class="utility-links">
+        <a href="#" id="clearCacheLink">Paksa Muat Ulang Data dari Server</a>
+    </div>
+</div>
+
+<script>
+    // =====================================================================================
+    // PENTING: Ganti URL ini dengan URL Web App Anda
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKdjiUJBBQo_qY25RQxesk1bL4iSGMs825CrnrI9lOUdfX8WdRnv0yA2ymh4pBiBL1/exec';
+    const CACHE_KEY = 'absensiV2Data'; // Menggunakan cache yang sama dengan V2
+    const CACHE_DURATION_MS = 3600 * 1000; // Cache selama 1 jam
+    // =====================================================================================
+
+    const searchInput = document.getElementById('searchInput');
+    const nameListDiv = document.getElementById('nameList');
+    const submitButton = document.getElementById('submitButton');
+    const statusMessage = document.getElementById('statusMessage');
+    let allNamesData = [];
+
+    // 1. Fungsi yang berjalan saat halaman pertama kali dimuat
+    window.onload = function() {
+        if (SCRIPT_URL === 'PASTE_YOUR_NEW_WEB_APP_URL_HERE') {
+            setStatus('Error: Harap masukkan URL Web App di file HTML.', true);
+            return;
+        }
+        loadData();
+
+        // Tambahkan event listener untuk link clear cache
+        document.getElementById('clearCacheLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem(CACHE_KEY);
+            setStatus('Cache dibersihkan. Memuat data baru...', false, 'success');
+            searchInput.value = '';
+            searchInput.disabled = true;
+            submitButton.disabled = true;
+            nameListDiv.innerHTML = 'Memuat data baru dari server...';
+            fetchDataFromServer();
+        });
+    };
+
+    // 2. Memuat data (dari cache atau dari server)
+    async function loadData() {
+        const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+
+        if (cachedData && (new Date().getTime() - cachedData.timestamp < CACHE_DURATION_MS)) {
+            console.log("Data dimuat dari cache.");
+            initializeUI(cachedData.data);
+        } else {
+            console.log("Mengambil data baru dari server.");
+            await fetchDataFromServer();
+        }
+    }
+
+    // 3. Mengambil data dari server
+    async function fetchDataFromServer() {
+        setStatus('Mengambil data terbaru dari server...', false);
+        try {
+            const response = await fetch(`${SCRIPT_URL}?action=getInitialData`);
+            const result = await response.json();
+
+            if (result.success) {
+                const dataToCache = {
+                    timestamp: new Date().getTime(),
+                    data: result
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(dataToCache));
+                initializeUI(result);
+            } else {
+                setStatus('Gagal mengambil data: ' + result.message, true);
+            }
+        } catch (error) {
+            console.error('Error fetching initial data:', error);
+            setStatus('Terjadi kesalahan saat menghubungi server.', true);
+        }
+    }
+
+    // 4. Menginisialisasi UI setelah data didapat
+    function initializeUI(data) {
+        allNamesData = data.names;
+        searchInput.disabled = false;
+        nameListDiv.innerHTML = 'Ketik nama di atas untuk menampilkan daftar.';
+        setStatus(`Total ${allNamesData.length} nama yang belum hadir berhasil dimuat.`, false, 'success');
+    }
+
+    // 5. Menyaring dan menampilkan nama sesuai input pencarian
+    function filterNames() {
+        const query = searchInput.value.toLowerCase();
+        nameListDiv.innerHTML = '';
+        submitButton.disabled = true;
+
+        if (query.length < 2) {
+            nameListDiv.innerHTML = 'Ketik min. 2 huruf untuk mencari.';
+            return;
+        }
+
+        const filteredNames = allNamesData.filter(item => item.name.toLowerCase().includes(query));
+
+        if (filteredNames.length > 0) {
+            displayNames(filteredNames);
+            submitButton.disabled = false;
+        } else {
+            nameListDiv.innerHTML = 'Tidak ada nama yang cocok.';
+        }
+    }
+    
+    // 6. Helper untuk menampilkan daftar nama yang sudah difilter
+    function displayNames(nameList) {
+        nameList.forEach(item => {
+            const checkboxId = `row-${item.row}`;
+            const newItem = document.createElement('div');
+            newItem.className = 'checkbox-item';
+            newItem.innerHTML = `<input type="checkbox" id="${checkboxId}" value="${item.row}"><label for="${checkboxId}">${item.name} (${item.angkatan})</label>`;
+            nameListDiv.appendChild(newItem);
+        });
+    }
+
+    // 7. Mengirim data kehadiran yang dicentang
+    async function submitAttendance() {
+        const checkedBoxes = nameListDiv.querySelectorAll('input[type="checkbox"]:checked');
+        const rowsToUpdate = Array.from(checkedBoxes).map(box => box.value);
+
+        if (rowsToUpdate.length === 0) {
+            setStatus('Pilih minimal satu nama untuk disubmit.', true);
+            return;
+        }
+
+        setStatus(`Mengirim ${rowsToUpdate.length} data kehadiran...`, false);
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'markMultipleAttendance', rows: rowsToUpdate }),
+            });
+            const result = await response.json();
+
+            if(result.success) {
+                setStatus(result.message, false, 'success');
+                // Hapus nama yang berhasil disubmit dari daftar dan cache
+                updateDataAfterSubmit(rowsToUpdate);
+                // Segarkan daftar pencarian untuk menghilangkan nama yang baru saja disubmit
+                filterNames();
+            } else {
+                setStatus('Gagal: ' + result.message, true);
+            }
+
+        } catch (error) {
+            console.error('Error submitting attendance:', error);
+            setStatus('Terjadi kesalahan saat mengirim data.', true);
+        }
+        submitButton.disabled = false;
+    }
+
+    // 8. Helper untuk update data setelah submit berhasil
+    function updateDataAfterSubmit(submittedRows) {
+        // Perbarui data master di memori
+        allNamesData = allNamesData.filter(item => !submittedRows.includes(item.row.toString()));
+
+        // Perbarui cache di localStorage
+        const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+        if (cachedData) {
+            cachedData.data.names = allNamesData;
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
+        }
+    }
+
+    // Helper untuk menampilkan status
+    function setStatus(message, isError, type = '') {
+        statusMessage.textContent = message;
+        statusMessage.className = isError ? 'error' : type;
+    }
+
+</script>
+
+</body>
+</html>

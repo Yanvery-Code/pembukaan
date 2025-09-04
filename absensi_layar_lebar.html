@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daftar Kehadiran SLA 2025</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      background: url('Background-Sla.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+    }
+
+    .overlay {
+      background: rgba(255, 255, 255, 0.85);
+      width: 100%;
+      height: 100%;
+      padding: 40px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .angkatan-title {
+      font-size: 3em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      background-color: rgba(255, 255, 255, 0.6);
+      padding: 10px 20px;
+      border-radius: 12px;
+      color: var(--warna-angkatan, #003300);
+      animation: slideFade 1s ease-in-out;
+    }
+
+    .jumlah {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: #003300;
+    }
+
+    .nama-list {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: nowrap;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      font-size: 2em;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    #fullscreen-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #003300;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 1001;
+    }
+
+    #controls button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #003300;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #controls button:hover {
+      background: #005500;
+    }
+    
+    .top10 {
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+    
+    #search-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1002;
+      display: flex;
+      gap: 5px;
+    }
+    #search-input {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    #search-container button {
+      padding: 10px 15px;
+      font-size: 1em;
+      background: #003300;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #search-results {
+        justify-content: flex-start;
+        text-align: center;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    #back-btn {
+      position: absolute;
+      top: 60px;
+      left: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #004d00;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #results-content {
+        margin-top: 60px;
+        font-size: 1.2em;
+        width: 90%;
+        text-align: left;
+    }
+    #results-content ul {
+        font-size: 1.2em;
+        line-height: 1.6;
+    }
+    #results-content h2 {
+        text-align: center;
+    }
+
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideFade {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .anniversary-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+      gap: 20px;
+    }
+    .anniversary-item {
+      background: rgba(255, 215, 0, 0.2);
+      border: 2px solid #FFD700;
+      border-radius: 15px;
+      padding: 10px 30px;
+      text-align: center;
+    }
+    .anniversary-item h2 {
+      font-size: 2.5em;
+      margin: 0;
+      color: #003300;
+    }
+    .anniversary-item p {
+      font-size: 1.5em;
+      margin: 5px 0 0;
+      color: #000;
+    }
+
+    .photo-slide {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .photo-slide img {
+      max-width: 95%;
+      max-height: 95%;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      .overlay {
+        padding: 20px;
+      }
+      .angkatan-title {
+        font-size: 2em;
+      }
+      .jumlah {
+        font-size: 1.2em;
+      }
+      ul {
+        font-size: 1.2em; /* Adjusted from 2em */
+      }
+       .nama-list {
+        flex-direction: column; /* Stack names vertically */
+        gap: 10px;
+        align-items: center;
+      }
+      .nama-list ul {
+          padding: 0;
+          text-align: center;
+      }
+      .top10 {
+        font-size: 1.1em;
+      }
+      #search-container, #controls {
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto; /* Allow container to fit content */
+        right: auto; /* Override desktop style */
+      }
+      #search-container {
+        bottom: 65px; /* Position for the top row */
+      }
+      #controls {
+        bottom: 20px; /* Position for the bottom row */
+      }
+
+      #results-content ul {
+        font-size: 1em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="search-container">
+  <input type="text" id="search-input" placeholder="Cari nama..." onkeydown="if(event.key==='Enter') performSearch()">
+  <button onclick="performSearch()">Cari</button>
+</div>
+
+<div id="search-results" class="overlay" style="display: none;">
+  <button id="back-btn" onclick="hideSearchResults()">Kembali ke Slide</button>
+  <div id="results-content"></div>
+</div>
+
+<button id="fullscreen-btn" onclick="toggleFullscreen()">Fullscreen</button>
+<div class="overlay" id="app">
+  <!-- <iframe src="https://lookerstudio.google.com/embed/reporting/fa0561b2-9371-4a0c-bdd1-ebab4135c55b/page/qgR" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe> -->
+<iframe width="1000" height="750" src="https://lookerstudio.google.com/embed/reporting/fa0561b2-9371-4a0c-bdd1-ebab4135c55b/page/qgR" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+</div>
+
+
+<div id="controls">
+  <button id="prev-btn" onclick="manualNavigate(-1)">Prev</button>
+  <button id="pause-btn" onclick="togglePause()">Pause</button>
+  <button id="next-btn" onclick="manualNavigate(1)">Next</button>
+</div>
+
+<audio id="background-music"></audio>
+
+<script>
+  // URL dari Web App yang Anda deploy (diambil dari absensi_pencarian.html)
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKdjiUJBBQo_qY25RQxesk1bL4iSGMs825CrnrI9lOUdfX8WdRnv0yA2ymh4pBiBL1/exec';
+
+  // --- Photo Gallery Logic ---
+//   const photoFiles = [
+//     'Deni.jpeg',
+//     'Des.jpeg',
+//     'sla-personal-yanveryzora.jpg'
+//   ];
+  const photoFiles = [ ];
+  // --- End of Photo Gallery Logic ---
+
+  // --- Music Player Logic ---
+  const audioPlayer = document.getElementById('background-music');
+  const musicPlaylist = [
+    '01-Titanium.mp3',
+    '02-Roundtable Rival.mp3',
+    '03-Shadows.mp3',
+    '04-Elements.mp3'
+  ];
+  let currentTrackIndex = 0;
+  let musicStarted = false;
+
+  function playNextTrack() {
+    if (musicPlaylist.length === 0) return;
+    currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length;
+    audioPlayer.src = musicPlaylist[currentTrackIndex];
+    audioPlayer.play();
+  }
+
+  function startMusic() {
+    if (musicStarted) return;
+    musicStarted = true;
+    audioPlayer.src = musicPlaylist[currentTrackIndex];
+    audioPlayer.play().catch(e => {
+      console.error("Autoplay was prevented. User interaction needed.");
+      const startPlayback = () => {
+        audioPlayer.play().catch(err => console.error("Playback failed:", err));
+      };
+      document.body.addEventListener('click', startPlayback, { once: true });
+      document.body.addEventListener('touchstart', startPlayback, { once: true });
+    });
+  }
+
+  audioPlayer.addEventListener('ended', playNextTrack);
+  // --- End of Music Player Logic ---
+
+  let displayItems = [];
+  let allUniqueData = [];
+  let totalAttendees = 0;
+  let currentIndex = 0;
+  let slideTimeout = null;
+  let isPaused = false;
+  const pageSize = 20;
+
+  const warnaList = ['#003300', '#006600', '#009900', '#00CC66', '#336633', '#228B22', '#2E8B57', '#3CB371', '#006400', '#32CD32'];
+
+  // --- PENGATURAN ---
+  // Waktu (dalam milidetik) untuk menampilkan Looker Studio sebelum slide dimulai. 1000 = 1 detik.
+  const LOOKER_STUDIO_DELAY = 30000; // 30 detik
+
+  async function fetchData() {
+    try {
+      // Mengambil data dari Google Apps Script, bukan CSV
+      const res = await fetch(`${SCRIPT_URL}?action=getPresentData&_t=${new Date().getTime()}`);
+      const result = await res.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Gagal mengambil data dari skrip.');
+      }
+
+      // Data yang diterima adalah `result.present` yang berisi array of objects {nama, angkatan}
+      allUniqueData = result.present; 
+      totalAttendees = allUniqueData.length;
+
+      const groups = {};
+      allUniqueData.forEach(r => {
+        // Pastikan properti yang diakses adalah 'angkatan' dan 'nama'
+        if (!groups[r.angkatan]) groups[r.angkatan] = [];
+        groups[r.angkatan].push(r.nama);
+      });
+      Object.keys(groups).forEach(angkatan => groups[angkatan].sort((a, b) => a.localeCompare(b)));
+
+      const top10 = Object.entries(groups)
+        .map(([angkatan, list]) => ({ angkatan, jumlah: list.length }))
+        .sort((a, b) => b.jumlah - a.jumlah)
+        .slice(0, 10);
+
+      const groupedData = Object.entries(groups)
+        .map(([angkatan, namaList]) => {
+          const tahun = parseInt(angkatan.match(/\d+/)?.[0] || '9999');
+          return { angkatan, namaList, rank: top10.findIndex(t => t.angkatan === angkatan) + 1, tahun };
+        })
+        .sort((a, b) => a.tahun - b.tahun);
+
+      const specialAnniversaries = [];
+      const anniversaryYears = [25, 50];
+      groupedData.forEach(data => {
+        const anniversary = 2025 - data.tahun;
+        if (anniversaryYears.includes(anniversary)) {
+          specialAnniversaries.push({ angkatan: data.angkatan, anniversary });
+        }
+      });
+
+      displayItems = [];
+      displayItems.push({ type: 'banner' });
+      displayItems.push({ type: 'top10', data: top10 });
+      if (specialAnniversaries.length > 0) {
+        displayItems.push({ type: 'anniversary', data: specialAnniversaries });
+      }
+
+      const photoSlides = photoFiles.map(file => ({ type: 'photo', path: `absen/foto/${file}` }));
+      const generationPages = [];
+      groupedData.forEach(d => {
+        const totalPages = Math.ceil(d.namaList.length / pageSize);
+        for (let i = 0; i < totalPages; i++) {
+          generationPages.push({ type: 'generation', data: d, page: i });
+        }
+      });
+
+      if (photoSlides.length > 0) {
+        const generationGroupSize = 4;
+        let photoIndex = 0;
+        for (let i = 0; i < generationPages.length; i++) {
+          displayItems.push(generationPages[i]);
+          if ((i + 1) % generationGroupSize === 0) {
+            displayItems.push(photoSlides[photoIndex % photoSlides.length]);
+            photoIndex++;
+          }
+        }
+      } else {
+        displayItems.push(...generationPages);
+      }
+
+      currentIndex = 0;
+      // Jeda agar Looker Studio sempat tampil, sesuai pengaturan LOOKER_STUDIO_DELAY
+      setTimeout(() => {
+        showSlide();
+      }, LOOKER_STUDIO_DELAY);
+    } catch (error) {
+      console.error("Gagal memuat data:", error);
+      document.getElementById('app').innerHTML = 'Gagal memuat data. Silakan cek koneksi dan coba lagi. Pastikan juga script sudah di-deploy ulang.';
+    }
+  }
+
+  function showSlide() {
+    clearTimeout(slideTimeout);
+    const container = document.getElementById('app');
+
+    if (currentIndex >= displayItems.length) {
+      container.innerHTML = `<div class="angkatan-title" style="font-size: 2.5em;">Memperbarui data...</div>`;
+      setTimeout(fetchData, 1500);
+      return;
+    }
+
+    const slide = displayItems[currentIndex];
+    let duration = 7000;
+
+    switch (slide.type) {
+      case 'banner':
+        container.innerHTML = `
+          <div class="angkatan-title" style="font-size: 4em; color: #004400;">KEHADIRAN SLA 2025</div>
+          <div class="jumlah" style="font-size: 2.5em; margin-top: 20px;">Total Hadir: ${totalAttendees} orang</div>
+        `;
+        duration = 5000;
+        break;
+      case 'top10':
+        container.innerHTML = `
+          <div class="angkatan-title">10 Angkatan Terbanyak</div>
+          <div class="top10">
+            <ul>
+              ${slide.data.map((item, i) => `<li>${i + 1}. ${item.angkatan} - ${item.jumlah} orang</li>`).join('')}
+            </ul>
+          </div>`;
+        duration = 10000;
+        break;
+      case 'anniversary':
+        container.innerHTML = `
+          <div class="angkatan-title" style="color: #FFD700; background-color: rgba(0, 0, 0, 0.7);">🎉 Angkatan Spesial 2025 🎉</div>
+          <div class="anniversary-list">
+            ${slide.data.map(item => `
+              <div class="anniversary-item">
+                <h2>${item.angkatan}</h2>
+                <p>Merayakan ${item.anniversary} Tahun!</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        duration = Math.max(slide.data.length * 2000, 5000);
+        break;
+      case 'photo':
+        container.innerHTML = `
+          <div class="photo-slide">
+            <img src="${slide.path}" alt="Galeri Foto">
+          </div>
+        `;
+        duration = 7000;
+        break;
+      case 'generation':
+        const { data, page } = slide;
+        const total = data.namaList.length;
+        const topInfo = data.rank > 0 && data.rank <= 10 ? `<div class="jumlah">TOP #${data.rank}</div>` : '';
+        const start = page * pageSize;
+        const pageList = data.namaList.slice(start, start + pageSize);
+        const kiri = pageList.slice(0, 10);
+        const kanan = pageList.slice(10, 20);
+        const warnaIndex = displayItems.filter(d => d.type === 'generation' && d.page === 0).findIndex(d => d.data.angkatan === data.angkatan) % warnaList.length;
+        document.documentElement.style.setProperty('--warna-angkatan', warnaList[warnaIndex]);
+        container.innerHTML = `
+          <div class="angkatan-title">${data.angkatan}</div>
+          ${topInfo}
+          <div class="jumlah">Jumlah Hadir: ${total} orang</div>
+          <div class="nama-list">
+            <ul>${kiri.map((n, i) => `<li>${start + i + 1}. ${n}</li>`).join('')}</ul>
+            <ul>${kanan.map((n, i) => `<li>${start + i + 11}. ${n}</li>`).join('')}</ul>
+          </div>`;
+        duration = Math.max(pageList.length * 500, 3000);
+        break;
+    }
+    scheduleNext(duration);
+  }
+
+  function scheduleNext(duration) {
+    if (!isPaused) {
+      slideTimeout = setTimeout(nextSlide, duration);
+    }
+  }
+
+  function nextSlide() {
+    changeSlide(1);
+  }
+
+  function changeSlide(direction) {
+    clearTimeout(slideTimeout);
+    currentIndex += direction;
+    if (currentIndex < 0) {
+      currentIndex = displayItems.length - 1;
+    }
+    showSlide();
+  }
+
+  function togglePause() {
+    isPaused = !isPaused;
+    document.getElementById('pause-btn').textContent = isPaused ? 'Play' : 'Pause';
+    if (!isPaused) {
+      scheduleNext(2000);
+    } else {
+      clearTimeout(slideTimeout);
+    }
+  }
+
+  function manualNavigate(direction) {
+    if (!isPaused) {
+      isPaused = true;
+      document.getElementById('pause-btn').textContent = 'Play';
+    }
+    changeSlide(direction);
+  }
+
+  function performSearch() {
+    const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+    if (!searchTerm) return;
+    clearTimeout(slideTimeout);
+    if (!isPaused) {
+      isPaused = true;
+      document.getElementById('pause-btn').textContent = 'Play';
+    }
+    const results = allUniqueData.filter(entry => entry.nama.toLowerCase().includes(searchTerm));
+    const resultsContainer = document.getElementById('search-results');
+    const resultsContent = document.getElementById('results-content');
+    let html = `<h2>Hasil Pencarian untuk "${searchTerm}"</h2>`;
+    if (results.length > 0) {
+      html += `<p>Ditemukan ${results.length} hasil:</p><ul>`;
+      const resultsByAngkatan = {};
+      results.forEach(r => {
+        if (!resultsByAngkatan[r.angkatan]) resultsByAngkatan[r.angkatan] = [];
+        resultsByAngkatan[r.angkatan].push(r.nama);
+      });
+      for (const angkatan in resultsByAngkatan) {
+        html += `<li><strong>${angkatan}:</strong> ${resultsByAngkatan[angkatan].sort().join(', ')}</li>`;
+      }
+      html += `</ul>`;
+    } else {
+      html += `<p>Tidak ada hasil yang ditemukan.</p>`;
+    }
+    resultsContent.innerHTML = html;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('controls').style.display = 'none';
+    resultsContainer.style.display = 'flex';
+  }
+
+  function hideSearchResults() {
+    document.getElementById('search-results').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('controls').style.display = 'flex';
+    document.getElementById('search-input').value = '';
+    if (isPaused) {
+      isPaused = false;
+      document.getElementById('pause-btn').textContent = 'Pause';
+    }
+    showSlide();
+  }
+
+  function toggleFullscreen() {
+    const el = document.documentElement;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(err => alert(`Gagal masuk fullscreen: ${err.message}`));
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  startMusic();
+  fetchData();
+</script>
+</body>
+</html>

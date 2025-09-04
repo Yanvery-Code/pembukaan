@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Cepat V2</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; background-color: #f0f2f5; margin: 2rem; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #555; }
+        select, button { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem; }
+        button { background-color: #007BFF; color: white; border: none; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem; }
+        button:hover:not(:disabled) { background-color: #0056b3; }
+        button:disabled { background-color: #a0cffc; cursor: not-allowed; }
+        #statusMessage { text-align: center; margin-top: 1.5rem; font-weight: bold; min-height: 20px; transition: color 0.3s; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        #nameList { max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 1rem; border-radius: 6px; background-color: #fafafa; }
+        .checkbox-item { display: block; margin-bottom: 0.75rem; }
+        .checkbox-item input { margin-right: 0.5rem; width: auto; }
+        .checkbox-item label { display: inline; font-weight: normal; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Absensi V2 (Checklist)</h2>
+    
+    <div class="form-group">
+        <label for="angkatanSelect">1. Pilih Angkatan:</label>
+        <select id="angkatanSelect" onchange="populateNames()">
+            <option value="">Memuat Angkatan...</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>2. Centang Nama yang Hadir:</label>
+        <div id="nameList">Pilih Angkatan Dahulu</div>
+    </div>
+
+    <button id="submitButton" onclick="submitAttendance()" disabled>Submit Kehadiran</button>
+    <p id="statusMessage"></p>
+</div>
+
+<script>
+    // =====================================================================================
+    // PENTING: Ganti URL ini dengan URL Web App BARU dari Google Apps Script Anda
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKdjiUJBBQo_qY25RQxesk1bL4iSGMs825CrnrI9lOUdfX8WdRnv0yA2ymh4pBiBL1/exec';
+    const CACHE_KEY = 'absensiV2Data';
+    const CACHE_DURATION_MS = 3600 * 1000; // Cache selama 1 jam
+    // =====================================================================================
+
+    const angkatanSelect = document.getElementById('angkatanSelect');
+    const nameListDiv = document.getElementById('nameList');
+    const submitButton = document.getElementById('submitButton');
+    const statusMessage = document.getElementById('statusMessage');
+    let allNamesData = [];
+
+    // 1. Fungsi yang berjalan saat halaman pertama kali dimuat
+    window.onload = function() {
+        if (SCRIPT_URL === 'PASTE_YOUR_NEW_WEB_APP_URL_HERE') {
+            setStatus('Error: Harap masukkan URL Web App di file HTML.', true);
+            return;
+        }
+        loadData();
+    };
+
+    // 2. Memuat data (dari cache atau dari server)
+    async function loadData() {
+        const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+
+        if (cachedData && (new Date().getTime() - cachedData.timestamp < CACHE_DURATION_MS)) {
+            console.log("Data dimuat dari cache.");
+            initializeUI(cachedData.data);
+            setStatus('Data dimuat dari cache. Silakan pilih angkatan.', false, 'success');
+        } else {
+            console.log("Mengambil data baru dari server.");
+            await fetchDataFromServer();
+        }
+    }
+
+    // 3. Mengambil data dari server
+    async function fetchDataFromServer(isFullInit = true) {
+        const statusMsg = isFullInit ? 'Mengambil data awal...' : 'Memperbarui data...';
+        setStatus(statusMsg, false);
+        
+        try {
+            // Tambahkan timestamp untuk mencegah caching di sisi server/browser
+            const response = await fetch(`${SCRIPT_URL}?action=getInitialData&t=${new Date().getTime()}`);
+            const result = await response.json();
+
+            if (result.success) {
+                const dataToCache = {
+                    timestamp: new Date().getTime(),
+                    data: result
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(dataToCache));
+
+                if (isFullInit) {
+                    initializeUI(result);
+                    setStatus('Data berhasil dimuat. Silakan pilih angkatan.', false, 'success');
+                } else {
+                    allNamesData = result.names; // Hanya update data nama di memory
+                }
+            } else {
+                setStatus('Gagal mengambil data: ' + result.message, true);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setStatus('Terjadi kesalahan saat menghubungi server.', true);
+        }
+    }
+
+    // 4. Menginisialisasi UI dengan data yang ada
+    function initializeUI(data) {
+        allNamesData = data.names;
+        angkatanSelect.innerHTML = '<option value="">Pilih Angkatan</option>';
+        data.angkatan.forEach(angkatan => {
+            const option = new Option(angkatan, angkatan);
+            angkatanSelect.add(option);
+        });
+    }
+
+    // 5. Mengisi daftar nama berdasarkan angkatan (dengan auto-refresh)
+    async function populateNames() {
+        const selectedAngkatan = angkatanSelect.value;
+        submitButton.disabled = true;
+
+        if (selectedAngkatan) {
+            nameListDiv.innerHTML = 'Memperbarui daftar nama...'; // Pesan sementara
+            
+            // Selalu ambil data terbaru saat angkatan dipilih, tanpa reset dropdown
+            await fetchDataFromServer(false); 
+
+            const filteredNames = allNamesData.filter(item => item.angkatan == selectedAngkatan);
+            
+            if (filteredNames.length > 0) {
+                nameListDiv.innerHTML = ''; // Hapus pesan "memuat"
+                filteredNames.forEach(item => {
+                    const checkboxId = `row-${item.row}`;
+                    const newItem = document.createElement('div');
+                    newItem.className = 'checkbox-item';
+                    newItem.innerHTML = `<input type="checkbox" id="${checkboxId}" value="${item.row}"><label for="${checkboxId}">${item.name}</label>`;
+                    nameListDiv.appendChild(newItem);
+                });
+                submitButton.disabled = false;
+                setStatus('Data terbaru siap. Silakan centang nama.', false, 'success');
+            } else {
+                nameListDiv.innerHTML = 'Tidak ada nama di angkatan ini atau semua sudah absen.';
+                setStatus('', false); // Hapus status sukses/error sebelumnya
+            }
+        } else {
+            nameListDiv.innerHTML = 'Pilih Angkatan Dahulu';
+        }
+    }
+
+    // 6. Mengirim data kehadiran yang dicentang
+    async function submitAttendance() {
+        const checkedBoxes = nameListDiv.querySelectorAll('input[type="checkbox"]:checked');
+        const rowsToUpdate = Array.from(checkedBoxes).map(box => box.value);
+
+        if (rowsToUpdate.length === 0) {
+            setStatus('Pilih minimal satu nama untuk disubmit.', true);
+            return;
+        }
+
+        setStatus(`Mengirim ${rowsToUpdate.length} data kehadiran...`, false);
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'markMultipleAttendance', rows: rowsToUpdate }),
+            });
+            const result = await response.json();
+
+            if(result.success) {
+                setStatus(result.message, false, 'success');
+                
+                // --- LOGIKA BARU UNTUK MENGHILANGKAN NAMA ---
+                // 1. Hapus dari tampilan
+                checkedBoxes.forEach(box => box.parentElement.remove());
+
+                // 2. Perbarui data master di memori
+                allNamesData = allNamesData.filter(item => !rowsToUpdate.includes(item.row.toString()));
+
+                // 3. Perbarui cache di localStorage
+                const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+                if (cachedData) {
+                    cachedData.data.names = allNamesData;
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(cachedData));
+                }
+                // --------------------------------------------
+
+            } else {
+                setStatus('Gagal: ' + result.message, true);
+            }
+
+        } catch (error) {
+            console.error('Error submitting attendance:', error);
+            setStatus('Terjadi kesalahan saat mengirim data.', true);
+        }
+        submitButton.disabled = false;
+    }
+
+    // Helper untuk menampilkan status
+    function setStatus(message, isError, type = '') {
+        statusMessage.textContent = message;
+        statusMessage.className = isError ? 'error' : type;
+    }
+
+</script>
+
+</body>
+</html>
